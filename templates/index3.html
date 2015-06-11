@@ -1,0 +1,611 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Forward Neck Posture</title>
+    <script src={% static "headtrackr.js" %}></script>
+    <script src={% static "jquery-2.1.4.min.js" %}></script>
+    <script src={% static "jquery-ui.min.js" %}></script>
+    <!--
+    <script src="http://code.jquery.com/jquery.js"></script>
+    <script src="http://code.jquery.com/ui/1.11.2/jquery-ui.js"></script>-->
+    <link href={% static "bootstrap/css/bootstrap.min.css" %} rel="stylesheet" media="screen">
+    <link href={% static "index.css" %} rel="stylesheet" media="screen">
+    <script src={% static  "bootstrap/js/bootstrap.min.js" %}></script>
+    <script src={% static  "echarts-all.js" %}></script>
+</head>
+<body>
+<div class="container">
+    <!-- Static navbar -->
+    <nav class="navbar navbar-default" role="navigation">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="logo"  href="/">Forward Head Neck Service</a>
+            </div>
+            <div id="navbar" class="navbar-collapse collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <!-- <li><a href="javascript:Logout();"><span class="nav-right-text">로그아웃</span></a></li>-->
+
+
+                </ul>
+            </div><!--/.nav-collapse -->
+        </div><!--/.container-fluid -->
+    </nav>
+
+</div> <!-- /container -->
+<div class="mainbody">
+    <div style="float:left; width:40%; padding-left:5px;">
+        <div style="width:100%; height:260px; margin-top:10px;">
+            <div style="width:340px; float:left">
+                <canvas id="inputCanvas" width="320" height="240" style="display:none"></canvas>
+                <video id="inputVideo" autoplay loop width="320" height="240" style="margin-left:5px; margin-top:5px;"></video>
+                <canvas id="overlay" width="320" height="240"></canvas>
+                <canvas id="debug" width="320" height="240"></canvas>
+            </div>
+            <div style="padding:5px;">
+                <div id="light" style="float:left; width:280px; height:115px; background-color: green;"></div>
+                <div style="float:left; width:280px; height:115px; border: 1px solid transparent; border-radius: 4px; border-color: #2e6da4; padding:5px; margin-top:10px;">
+                    <div id="td1"></div>
+                    <div id="td2"></div>
+                    <div id="td3"></div>
+                    <p id='gUMMessage'></p>
+                    <p><span id='headtrackerMessage'></span></p>
+                </div>
+            </div>
+        </div>
+
+        <div style="margin:10px;">
+            <div style="width:97%;  border: 1px solid transparent; border-radius: 4px; border-color: #2e6da4; padding:5px; margin-top:10px;">
+                <h3> 사용자 가이드 </h3>
+                <h4> 사용 방법 </h4>
+                <p>
+                    <span id="start1" style="font-weight:bold; color:blue;">1. 얼굴을 인식하는 중 입니다.</span> </br>
+                    <span id="start2">2. 얼굴이 잘 인식 되었다면, 정상적인 자세를 취한 후 "정상목 측정하기" 버튼을 눌러주세요.</span> </br>
+                    <span id="start3">3. 거북목 자세를 취한 후 "거북목 측정하기" 버튼을 눌러주세요.</span></br>
+                    <span id="start4">4. 시작하기를 누르시면 거북목 측정이 시작 됩니다.</span>
+
+                </p>
+                    <!--
+                    <p id="start1" style="font-weight:bold; color:blue;">1. 시작 버튼을 눌러서 얼굴 인식을 시작합니다.</br>
+                        &nbsp; &nbsp; &nbsp; &nbsp; * Feature가 쌓여야 얼굴 인식이 잘 됩니다. 얼굴을 조금씩 움직여주세요. </br>
+                        &nbsp; &nbsp; &nbsp; &nbsp; * 얼굴 인식이 잘 안 될 시 reset 버튼을 눌러주세요.</br>
+                    </p>
+                    <p id="start2">2. 얼굴이 잘 인식이 되었다면, 거북목 시스템 시작 버튼을 눌러서 거북목 detection을 시작합니다.</br>
+                        &nbsp; &nbsp; &nbsp; &nbsp; * 뒷 배경에 변화가 심하면 tracking miss가 납니다. </br>
+                        &nbsp; &nbsp; &nbsp; &nbsp; * 잠시 노트북을 두고 떠났을 때 다시 얼굴 인식을 시작하셔야 합니다.</br>
+                    </p>
+                    <p id="start3">3. 웹사이트를 Background로 두셔도, 거북목 시스템은 Notification을 통해 알려드립니다.</p>
+                    -->
+                <h4> 분석 페이지 설명 </h4>
+                <p>차계기판 챠트 : 실시간 거북목 위험 상태를 수치적으로 알려줍니다. </br>
+                    파이 챠트 : 사용시간 동안의 거북목 상태를 나타냅니다. </br>
+                    그래프 : 사용시간 동안의 거북목 상태를 시간과 위험 수치로 나타냅니다. </br>
+                </p>
+                </br>
+
+            </div>
+            <button type="button" class="btn btn-primary start-btn" style="margin-top:10px; width: 48%; height:70px;" onclick="javascript:start();">정상목 측정하기</button>
+            <button type="button" class="btn btn-danger restart-btn" style="margin-top:10px; width: 48%; height:70px;" onclick="javascript:restart();">재 시작 하기</button>
+        </div>
+
+
+
+        <!--<img src="{% static "overlay.png" %}" style="position: absolute; top:90px; width:640px; height:480px; opacity:0.3 ">-->
+
+        <script type="text/javascript">
+
+
+            var videoInput = document.getElementById('inputVideo');
+            var canvasInput = document.getElementById('inputCanvas');
+            var canvasOverlay = document.getElementById('overlay');
+            var debugOverlay = document.getElementById('debug');
+            var overlayContext = canvasOverlay.getContext('2d');
+            canvasOverlay.style.position = "absolute";
+            canvasOverlay.style.top = '90px';
+            canvasOverlay.style.zIndex = '100001';
+            canvasOverlay.style.display = 'block';
+            debugOverlay.style.position = "absolute";
+            debugOverlay.style.top = '90px';
+            debugOverlay.style.zIndex = '100002';
+            debugOverlay.style.display = 'none';
+
+            statusMessages = {
+                "whitebalance" : "카메라 white balance 조절 중.",
+                "detecting" : "얼굴 탐색 중...",
+                "hints" : "얼굴 탐색이 오래 걸리고 있습니다.",
+                "redetecting" : "트래킹 로스트가 났습니다.",
+                "lost" : "트래킹 로스트",
+                "found" : "얼굴을 찾았습니다."
+            };
+
+            supportMessages = {
+                "no getUserMedia" : "Unfortunately, <a href='http://dev.w3.org/2011/webrtc/editor/getusermedia.html'>getUserMedia</a> is not supported in your browser. Try <a href='http://www.opera.com/browser/'>downloading Opera 12</a> or <a href='http://caniuse.com/stream'>another browser that supports getUserMedia</a>. Now using fallback video for facedetection.",
+                "no camera" : "No camera found. Using fallback video for facedetection."
+            };
+
+            function notifyMe() {
+                // Let's check if the browser supports notifications
+                if (!("Notification" in window)) {
+                    alert("This browser does not support desktop notification");
+                }
+
+                // Let's check whether notification permissions have alredy been granted
+                else if (Notification.permission === "granted") {
+                    // If it's okay let's create a notification
+                    // Safari and Chrome on MacOS does not allow icon to be set. FireFOX use default notification.
+                    // This code is from https://developer.mozilla.org/ko/docs/Web/API/notification
+                    // Refer to http://stackoverflow.com/questions/22897904/display-icon-in-notifiaction-firefoxos
+
+                    var notification = new Notification("Forward Head Posture Noticed",
+                            {body: "Stretch Your Back"});
+                }
+
+                // Otherwise, we need to ask the user for permission
+                else if (Notification.permission !== 'denied') {
+                    Notification.requestPermission(function (permission) {
+                        // If the user accepts, let's create a notification
+                        if (permission === "granted") {
+                            var notification = new Notification("Thank you");
+                        }
+                    });
+                }
+
+                // At last, if the user has denied notifications, and you
+                // want to be respectful there is no need to bother them any more.
+            }
+
+            //calcAngles : true,
+            var htracker = new headtrackr.Tracker({ui : false, headPosition : true, debug : debugOverlay});
+            htracker.init(videoInput, canvasInput);
+            htracker.start();
+
+
+            var found = false;
+            document.addEventListener("headtrackrStatus", function(event) {
+                console.log("a");
+                if (event.status in supportMessages) {
+                    var messagep = document.getElementById('gUMMessage');
+                    messagep.innerHTML = supportMessages[event.status];
+                } else if (event.status in statusMessages) {
+                    var messagep = document.getElementById('headtrackerMessage');
+                    messagep.innerHTML = statusMessages[event.status];
+
+                    if(event.status == "found" && !found)
+                    {
+                        found = true;
+                        $("#start1").css({
+                            "color": "black",
+                            "font-weight": ""
+                        });
+
+                        if(initiated == 0)
+                        {
+                            $("#start2").css({
+                            "color": "blue",
+                            "font-weight": "bold"
+                            });
+                        }
+                    }
+
+                }
+                //console.log(event.status + " : " + event.status == "found")
+            }, true);
+
+            var initialWidth = -1, initialHeight = -1, initialY = -1, initialZ = -1;
+            var lastWidth = -1, lastHeight = -1, lastY = -1, lastZ = -1;
+            var index = 0, max_index = 50;
+            var threshold_width = 5, threshold_height = 5, threshold_y = 5 , threshold_z = 10;
+            var detected = false;
+            var initiated = 0;
+            var startpressed = false;
+            var timeCountToAlert = 0;
+            function start()
+            {
+                startpressed = true;
+                if(initiated == 0)
+                {
+                    $(".start-btn").html('거북목 측정하기');
+                    $("#start2").css({
+                            "color": "black",
+                            "font-weight": ""
+                        });
+                    $("#start3").css({
+                            "color": "blue",
+                            "font-weight": "bold"
+                    });
+
+                    initiated = 1;
+                }
+                else if(initiated == 2)
+                {
+                    $(".start-btn").html('시작하기');
+                    $("#start3").css({
+                            "color": "black",
+                            "font-weight": ""
+                        });
+                    $("#start4").css({
+                            "color": "blue",
+                            "font-weight": "bold"
+                    });
+                    initiated = 3;
+                }
+                else if(initiated == 4)
+                {
+                    $("#start4").css({
+                            "color": "black",
+                            "font-weight": ""
+                        });
+                    $(".start-btn").html('종료');
+                    initiated = 5;
+                }
+                else if(initiated == 5)
+                {
+                    initiated = 0;
+                    $(".start-btn").html('정상목 측정하기');
+                    //htracker.stop();
+                }
+
+            }
+
+            function restart()
+            {
+                initiated = 0;
+                $(".start-btn").html('정상목 측정하기');
+                htracker.stop();
+                htracker.start();
+                overlayContext.clearRect(0,0,320,240);
+                messagep.innerHTML = '';
+            }
+
+
+            function setText(text1, text2, origin1, origin2){
+                document.getElementById('td1').innerHTML = "face distance from monitor " + text1.toFixed(2) + " original:" + origin1.toFixed(2);
+                document.getElementById('td2').innerHTML = "y distance " + text2.toFixed(2) + " original:" + origin2.toFixed(2);
+            }
+
+
+            document.addEventListener('headtrackingEvent', function(event) {
+                //document.getElementById('td3').innerHTML = "z distance " + event.z;
+            }, false);
+
+
+            var recentEventY = 0;
+            var option3_turtle = 0;
+            var option3_non_turtle = 1;
+            document.addEventListener('facetrackingEvent', function(event) {
+
+                recentEventY = event.y;
+                // clear canvas
+                overlayContext.clearRect(0,0,320,240);
+                // once we have stable tracking, draw rectangle
+                if (event.detection == "CS") {
+                    overlayContext.translate(event.x, event.y)
+                    overlayContext.rotate(event.angle-(Math.PI/2));
+                    overlayContext.strokeStyle = "#00CC00";
+                    overlayContext.strokeRect((-(event.width/2)) >> 0, (-(event.height/2)) >> 0, event.width, event.height);
+                    overlayContext.rotate((Math.PI/2)-event.angle);
+                    overlayContext.translate(-event.x, -event.y);
+                }
+
+                if(initiated == 1)
+                {
+                    initialWidth = event.width;
+                    initialHeight = event.height;
+                    initialY = event.y;
+
+                    index++;
+
+                    initiated = 2;
+                }
+
+                if(initiated == 3)
+                {
+                    lastWidth = event.width;
+                    lastHeight = event.height;
+                    lastY = event.y;
+
+                    index++;
+
+                    threshold_y = (lastY - initialY) / 2;
+
+                    initiated = 4;
+                }
+
+                //setText(0, event.y, 0, initialY);
+
+                if(initiated == 5)
+                {
+                    //if(Math.abs(initialWidth - event.width) > threshold_width || Math.abs(initialWidth - event.width) > threshold_height || Math.abs(initialY - event.y) > threshold_y)
+                    if((event.y - initialY)> threshold_y)
+                    {
+                        console.log(initialWidth + ", " + initialHeight + ", " + initialY + ", " + event.width + ", " + event.height + ", " + event.y);
+                        if(!detected)
+                        {
+                            //option3_turtle++;
+                            //option3.series[0].data[0].value = option3_turtle;
+                            //option3.series[0].data[1].value = option3_non_turtle;
+                            //myChart3.setOption(option3);
+                        }
+
+
+                        {
+                            detected = true;
+                            console.log("turtle Neck");
+                            timeCountToAlert++;
+                            if (timeCountToAlert == 50) {
+                                notifyMe();
+                            }
+                            document.getElementById("light").style.backgroundColor = "red";
+                        }
+
+                    }
+                    else
+                    {
+                        if(detected)
+                        {
+                            //option3_non_turtle++;
+                            //option3.series[0].data[0].value = option3_turtle;
+                            //option3.series[0].data[1].value = option3_non_turtle;
+                            //myChart3.setOption(option3);
+                        }
+
+                        {
+                            timeCountToAlert = 0;
+                            detected = false;
+                            //console.log("Reset");
+                            document.getElementById("light").style.backgroundColor = "green";
+                        }
+                    }
+
+
+                    //Chart1
+                    var optionVal = (event.y - initialY)/(threshold_y * 2) * 100;
+                    if(optionVal > 0)
+                        option.series[0].data[0].value = optionVal;//(Math.random()*100).toFixed(2) - 0;
+                    else
+                        option.series[0].data[0].value = 0;
+                    myChart.setOption(option, true);
+                }
+
+            }, false);
+
+            //clearInterval(timeTicket);
+
+            var option2_list = [];
+            timeTicket = setInterval(function (){
+
+                if(initiated == 5)
+                {
+                    var per = (recentEventY- initialY) / (lastY - initialY) * 10;
+
+                    if(per < 0) per = 0;
+
+                    option2_list.push(per);
+
+
+                    if(option2_list.length > 60)
+                    {
+                        option2_list.length = 0;
+                        option2_list.push(10);
+                    }
+
+
+                    option2.series[0].data = option2_list;//(Math.random()*100).toFixed(2) - 0;
+                    myChart2.setOption(option2, true);
+                }
+
+            },2000);
+
+
+            timeTicket2 = setInterval(function (){
+
+                if(initiated == 5)
+                {
+                    if(!detected)
+                        option3_non_turtle++;
+                    else
+                        option3_turtle++;
+
+                    option3.series[0].data[0].value = option3_turtle;
+                    option3.series[0].data[1].value = option3_non_turtle;
+                    myChart3.setOption(option3);
+                }
+
+            },2000);
+
+        </script>
+    </div>
+    <div style="float:left; width:60%; background-color: #eeeeed; height:810px; padding:10px;">
+        <p style="margin-top:5px; margin-left: 20px; margin-bottom:20px; font-size: 30px; font-weight: bold;"> 거북목 분석 페이지 </p>
+        <div id="main" style="width:400px; height:400px; float:left;"></div>
+        <script>
+            var myChart = echarts.init(document.getElementById('main'));
+            option = {
+                tooltip : {
+                    formatter: "{a} <br/>{b} : {c}%"
+                },
+                toolbox: {
+                    show : false,
+                    feature : {
+                        mark : {show: true},
+                        restore : {show: true},
+                        saveAsImage : {show: true}
+                    }
+                },
+                series : [
+                    {
+                        name:'거북목 게이지',
+                        type:'gauge',
+                        detail : '', //{formatter:'{value}%'},
+                        data:[{value: 0, name: '거북목 위험도'}],
+                        axisLine: {            // 坐标轴线
+                            lineStyle: {
+                                color: [[0.1, '#228b22'], [0.2, '#38841E'], [0.3, '#4E7D1B'], [0.4, '#647617'], [0.5, '#7A6F14'], [0.6, '#906811'],
+                                    [0.7, '#A6610D'], [0.8, '#BC5A0A'], [0.9, '#D25306'], [1, '#E84C03']],
+                                width: 15
+                            }
+                        },
+                        axisLabel: {
+                            show: false
+                        }
+                    }
+                ]
+            };
+
+            //            clearInterval(timeTicket);
+            /*
+             timeTicket = setInterval(function (){
+             option.series[0].data[0].value = 100;//(Math.random()*100).toFixed(2) - 0;
+             myChart.setOption(option, true);
+             },2000);
+             */
+
+            myChart.setOption(option);
+        </script>
+        <div id="main3" style="width:500px; height:300px; float:left; "></div>
+        <script>
+            var myChart3 = echarts.init(document.getElementById('main3'));
+            option3 = {
+                title : {
+                    text: '거북목 상태',
+                    subtext: '이재훈 님',
+                    x:'center'
+                },
+                tooltip : {
+                    trigger: 'item',
+                    formatter: "{a} <br/>{b} : {c} ({d}%)"
+                },
+                legend: {
+                    orient : 'vertical',
+                    x : 'left',
+                    data:['거북목','정상']
+                },
+                toolbox: {
+                    show : false,
+                    feature : {
+                        mark : {show: true},
+                        dataView : {show: true, readOnly: false},
+                        magicType : {
+                            show: true,
+                            type: ['pie', 'funnel'],
+                            option: {
+                                funnel: {
+                                    x: '25%',
+                                    width: '50%',
+                                    funnelAlign: 'left',
+                                    max: 1548
+                                }
+                            }
+                        },
+                        restore : {show: true},
+                        saveAsImage : {show: true}
+                    }
+                },
+                calculable : true,
+                series : [
+                    {
+                        name:'访问来源',
+                        type:'pie',
+                        radius : '55%',
+                        center: ['50%', '60%'],
+
+                        data:[
+                            {value:0, name:'거북목'},
+                            {value:1, name:'정상'}
+                        ]
+                    }
+                ],
+                color:['#E84C03', '#228b22']
+            };
+
+
+            myChart3.setOption(option3);
+        </script>
+        <div id="main2" style="width:900px; height:300px; float:left; "></div>
+        <script>
+            var myChart2 = echarts.init(document.getElementById('main2'));
+            option2 = {
+                tooltip: {
+                    trigger: 'axis'
+                },
+                toolbox: {
+                    show: false,
+                    feature: {
+                        mark: {show: true},
+                        dataZoom: {show: true},
+                        dataView: {show: true},
+                        magicType: {show: true, type: ['line', 'bar']},
+                        restore: {show: true},
+                        saveAsImage: {show: true}
+                    }
+                },
+                dataZoom: {
+                    show: false,
+                    realtime: true,
+                    //orient: 'vertical',   // 'horizontal'
+                    //x: 0,
+                    y: 36,
+                    //width: 400,
+                    height: 20,
+                    //backgroundColor: 'rgba(221,160,221,0.5)',
+                    //dataBackgroundColor: 'rgba(138,43,226,0.5)',
+                    //fillerColor: 'rgba(38,143,26,0.6)',
+                    //handleColor: 'rgba(128,43,16,0.8)',
+                    //xAxisIndex:[],
+                    //yAxisIndex:[],
+                    start: 0,
+                    end: 100
+                },
+                xAxis: [
+                    {
+                        type: 'category',
+                        name:'시간',
+                        boundaryGap: false,
+                        data: function () {
+                            var list = [];
+                            var n = 0;
+                            while (n < 60) {
+                                list.push(n);
+                                n++;
+                            }
+                            return list;
+                        }()
+                    }
+                ],
+                yAxis: [
+                    {
+                        type: 'value',
+                        name:'거북목 정도'
+                    }
+                ],
+                series: [
+                    {
+                        name: '거북목 상태',
+                        type: 'line',
+                        data: function () {
+                            var list = [10];
+                            //for (var i = 1; i <= 13; i++) {
+                            //   list.push(Math.round(Math.random() * 10));
+                            //}
+                            return list;
+                        }()
+                    }
+                ],
+                calculable: false
+            };
+
+            myChart2.setOption(option2);
+
+
+        </script>
+    </div>
+</div>
+</body>
+</html>

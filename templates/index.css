@@ -1,0 +1,97 @@
+html, body {
+    height:100%;
+}
+
+body,table/*,input,textarea,select,button*/{font-family:'NanumGothic';}
+
+.footer
+{
+
+    padding-top : 10px;
+    height : 100px;
+    background-color : #333739;
+    float: left;
+    width : 100%;
+
+}
+
+.foot-title
+{
+    text-align :center;
+}
+
+.foot-subtitle
+{
+    text-align :left;
+    padding-right : 20px;
+}
+
+.footer-label
+{
+    color : #FFFFFF;
+}
+
+.mainbody {
+    float:left;
+    background-color : #eeeeed;
+    min-width: 100%;
+    min-height: 100%;
+}
+
+.container {
+    margin : 0px;
+    padding : 0px;
+    width : 100%;
+    height : 90px;
+}
+
+.navbar {
+    background-color : #333739;
+    height : 90px;
+    border:none !important;
+    border-radius:0px;
+}
+
+.navbar-header {
+    margin-top : 25px;
+}
+
+.navbar-collapse{
+    margin-top : 20px;
+}
+
+.logo {
+    margin-left:10px;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-weight: bold;
+    font-size : 25px;
+    color : white;
+    text-decoration: none !important;
+}
+
+.logo:hover{
+    color: #2ecc71;
+    transition: 0.25s;
+}
+
+
+.nav-right-text{
+    font-family: "NanumGothic";
+    font-weight : bold;
+    font-size : 17px;
+    color : white;
+}
+
+.nav-right-text:hover{
+    color: #2ecc71;
+    transition: 0.25s;
+}
+
+.passwordText{
+    padding-top: 10px;
+}
+
+.savecheckbox{
+    margin-top: 20px;;
+
+}
